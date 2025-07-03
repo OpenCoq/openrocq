@@ -18,8 +18,6 @@ DECLARE PLUGIN "rocq-runtime.plugins.cognitiveengine"
 {
 
 open Stdarg
-open Pcoq.Prim
-open Pcoq.Constr
 open Cognitiveengine
 
 (* Global cognitive engine instance *)
@@ -53,62 +51,11 @@ VERNAC COMMAND EXTEND CognitiveEngineAddConcept CLASSIFIED AS SIDEFF
   }
 END
 
-VERNAC COMMAND EXTEND CognitiveEngineAddRelation CLASSIFIED AS SIDEFF
-| [ "CognitiveEngine" "AddRelation" int(source_id) int(target_id) string(relation_type) ] -> {
-    let engine = get_engine () in
-    let relation_id = add_relationship engine source_id target_id relation_type in
-    Feedback.msg_info Pp.(str ("Added relation: " ^ relation_type ^ " (ID: " ^ string_of_int relation_id ^ ")"))
-  }
-END
-
-VERNAC COMMAND EXTEND CognitiveEngineQuery CLASSIFIED AS QUERY
-| [ "CognitiveEngine" "Query" string(name) ] -> {
-    let engine = get_engine () in
-    let concept_ids = query_concepts engine name in
-    let ids_str = String.concat ", " (List.map string_of_int concept_ids) in
-    Feedback.msg_info Pp.(str ("Found concepts: " ^ ids_str))
-  }
-END
-
 VERNAC COMMAND EXTEND CognitiveEngineStatus CLASSIFIED AS QUERY
 | [ "CognitiveEngine" "Status" ] -> {
     let engine = get_engine () in
     let status = get_engine_status engine in
     Feedback.msg_info Pp.(str status)
-  }
-END
-
-VERNAC COMMAND EXTEND CognitiveEngineExport CLASSIFIED AS QUERY
-| [ "CognitiveEngine" "Export" ] -> {
-    let engine = get_engine () in
-    let scheme_code = export_to_scheme engine in
-    Feedback.msg_info Pp.(str "Exported to Scheme format:");
-    Feedback.msg_info Pp.(str scheme_code)
-  }
-END
-
-VERNAC COMMAND EXTEND CognitiveEngineAttention CLASSIFIED AS SIDEFF
-| [ "CognitiveEngine" "Attention" int(concept_id) float(boost) ] -> {
-    let engine = get_engine () in
-    update_concept_attention engine concept_id boost;
-    Feedback.msg_info Pp.(str ("Updated attention for concept " ^ string_of_int concept_id))
-  }
-END
-
-VERNAC COMMAND EXTEND CognitiveEngineFocus CLASSIFIED AS QUERY
-| [ "CognitiveEngine" "Focus" int(n) ] -> {
-    let engine = get_engine () in
-    let focus_ids = get_cognitive_focus engine n in
-    let ids_str = String.concat ", " (List.map string_of_int focus_ids) in
-    Feedback.msg_info Pp.(str ("Current focus: " ^ ids_str))
-  }
-END
-
-VERNAC COMMAND EXTEND CognitiveEngineIntrospect CLASSIFIED AS SIDEFF
-| [ "CognitiveEngine" "Introspect" ] -> {
-    let engine = get_engine () in
-    trigger_metacognitive_cycle engine;
-    Feedback.msg_info Pp.(str "Triggered meta-cognitive introspection cycle")
   }
 END
 

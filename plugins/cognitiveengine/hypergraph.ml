@@ -97,9 +97,9 @@ let add_node atomspace name =
 let get_node atomspace id =
   Hashtbl.find_opt atomspace.nodes id
 
-let update_node atomspace id node =
-  let updated_node = { node with updated_at = current_time () } in
-  Hashtbl.replace atomspace.nodes id updated_node
+let update_node atomspace id node_to_update =
+  let node_with_timestamp = { node_to_update with updated_at = current_time () } in
+  Hashtbl.replace atomspace.nodes id node_with_timestamp
 
 let delete_node atomspace id =
   match Hashtbl.find_opt atomspace.nodes id with

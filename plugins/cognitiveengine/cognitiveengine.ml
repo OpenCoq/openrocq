@@ -1,28 +1,22 @@
 (* Main cognitive engine plugin interface *)
 
-open Hypergraph
-open Taskscheduler
-open Ecan
-open Reasoning
-open Metacognition
-
 (** Main cognitive engine *)
 type cognitive_engine = {
-  atomspace : atomspace;
-  task_scheduler : task_scheduler;
-  ecan_allocator : ecan_allocator;
-  pln_engine : pln_engine;
-  moses_engine : moses_engine option;
-  metacognitive_engine : metacognitive_engine;
+  atomspace : Hypergraph.atomspace;
+  task_scheduler : Taskscheduler.task_scheduler;
+  ecan_allocator : Ecan.ecan_allocator;
+  pln_engine : Reasoning.pln_engine;
+  moses_engine : Reasoning.moses_engine option;
+  metacognitive_engine : Metacognition.metacognitive_engine;
 }
 
 (** Create a new cognitive engine *)
 let create_cognitive_engine () =
-  let atomspace = create_atomspace () in
-  let task_scheduler = create_scheduler 4 in
-  let ecan_allocator = create_ecan_allocator atomspace default_ecan_config in
-  let pln_engine = create_pln_engine atomspace in
-  let metacognitive_engine = create_metacognitive_engine atomspace task_scheduler ecan_allocator pln_engine in
+  let atomspace = Hypergraph.create_atomspace () in
+  let task_scheduler = Taskscheduler.create_scheduler 4 in
+  let ecan_allocator = Ecan.create_ecan_allocator atomspace Ecan.default_ecan_config in
+  let pln_engine = Reasoning.create_pln_engine atomspace in
+  let metacognitive_engine = Metacognition.create_metacognitive_engine atomspace task_scheduler ecan_allocator pln_engine in
 
   {
     atomspace;
@@ -35,40 +29,40 @@ let create_cognitive_engine () =
 
 (** Add a concept to the atomspace *)
 let add_concept engine name =
-  let node = add_node engine.atomspace name in
+  let node = Hypergraph.add_node engine.atomspace name in
   node.id
 
 (** Add a relationship between concepts *)
 let add_relationship engine source_id target_id relation_type =
-  let link = add_link engine.atomspace [source_id] [target_id] relation_type in
+  let link = Hypergraph.add_link engine.atomspace [source_id] [target_id] relation_type in
   link.id
 
 (** Query concepts by name *)
 let query_concepts engine name =
-  let nodes = find_nodes_by_name engine.atomspace name in
+  let nodes = Hypergraph.find_nodes_by_name engine.atomspace name in
   List.map (fun node -> node.id) nodes
 
 (** Perform reasoning inference *)
 let perform_reasoning engine rule premises =
-  perform_pln_inference engine.pln_engine rule premises
+  Reasoning.perform_pln_inference engine.pln_engine rule premises
 
 (** Schedule a cognitive task *)
 let schedule_cognitive_task engine name priority description estimated_duration =
-  let task = add_task engine.task_scheduler name priority description estimated_duration [] [] in
-  schedule_tasks engine.task_scheduler;
+  let task = Taskscheduler.add_task engine.task_scheduler name priority description estimated_duration [] [] in
+  Taskscheduler.schedule_tasks engine.task_scheduler;
   task
 
 (** Update attention for concept *)
 let update_concept_attention engine concept_id boost_amount =
-  update_attention_on_access engine.ecan_allocator concept_id boost_amount
+  Ecan.update_attention_on_access engine.ecan_allocator concept_id boost_amount
 
 (** Get attention focus *)
 let get_cognitive_focus engine n =
-  get_attention_focus engine.ecan_allocator n
+  Ecan.get_attention_focus engine.ecan_allocator n
 
 (** Trigger meta-cognitive cycle *)
 let trigger_metacognitive_cycle engine =
-  trigger_introspection_cycle engine.metacognitive_engine
+  Metacognition.trigger_introspection_cycle engine.metacognitive_engine
 
 (** Get engine statistics *)
 let get_engine_statistics engine =
@@ -80,7 +74,7 @@ let get_engine_statistics engine =
   Hashtbl.add stats "tensor_count" (float_of_int (Hashtbl.length engine.atomspace.tensors));
 
   (* Task scheduler statistics *)
-  let (pending, running, completed, failed, cancelled) = get_task_statistics engine.task_scheduler in
+  let (pending, running, completed, failed, cancelled) = Taskscheduler.get_task_statistics engine.task_scheduler in
   Hashtbl.add stats "tasks_pending" (float_of_int pending);
   Hashtbl.add stats "tasks_running" (float_of_int running);
   Hashtbl.add stats "tasks_completed" (float_of_int completed);
@@ -88,18 +82,18 @@ let get_engine_statistics engine =
   Hashtbl.add stats "tasks_cancelled" (float_of_int cancelled);
 
   (* Attention statistics *)
-  let (total_sti, total_lti, total_vlti, node_count) = get_attention_statistics engine.ecan_allocator in
+  let (total_sti, total_lti, total_vlti, node_count) = Ecan.get_attention_statistics engine.ecan_allocator in
   Hashtbl.add stats "total_sti" total_sti;
   Hashtbl.add stats "total_lti" total_lti;
   Hashtbl.add stats "total_vlti" total_vlti;
   Hashtbl.add stats "attention_node_count" (float_of_int node_count);
 
   (* PLN statistics *)
-  let inference_count = List.length (get_pln_inference_history engine.pln_engine) in
+  let inference_count = List.length (Reasoning.get_pln_inference_history engine.pln_engine) in
   Hashtbl.add stats "inference_count" (float_of_int inference_count);
 
   (* Meta-cognitive statistics *)
-  let metacog_state = get_metacognitive_state engine.metacognitive_engine in
+  let metacog_state = Metacognition.get_metacognitive_state engine.metacognitive_engine in
   Hashtbl.add stats "cognitive_load" metacog_state.cognitive_load;
   Hashtbl.add stats "confidence_level" metacog_state.confidence_level;
 
@@ -170,13 +164,13 @@ let get_engine_status engine =
 (** Shutdown engine *)
 let shutdown_engine engine =
   (* Cancel all pending tasks *)
-  let pending_tasks = get_tasks_by_state engine.task_scheduler Pending in
+  let pending_tasks = Taskscheduler.get_tasks_by_state engine.task_scheduler Taskscheduler.Pending in
   List.iter (fun task ->
-    ignore (cancel_task engine.task_scheduler task.id)
+    ignore (Taskscheduler.cancel_task engine.task_scheduler task.id)
   ) pending_tasks;
 
   (* Perform final attention decay *)
-  decay_attention_values engine.ecan_allocator;
+  Ecan.decay_attention_values engine.ecan_allocator;
 
   (* Clear data structures *)
   Hashtbl.clear engine.atomspace.nodes;

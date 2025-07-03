@@ -199,7 +199,7 @@ let evaluate_moses_individual engine individual =
 (** Initialize MOSES population *)
 let initialize_moses_population engine =
   let individuals = ref [] in
-  for i = 1 to engine.config.population_size do
+  for _i = 1 to engine.config.population_size do
     let individual = create_random_moses_individual engine.config 0 in
     let fitness = evaluate_moses_individual engine individual in
     let updated_individual = { individual with fitness } in
@@ -241,7 +241,7 @@ let evolve_moses_population engine =
   let new_individuals = ref [] in
 
   (* Selection and reproduction *)
-  for i = 1 to (engine.config.population_size / 2) do
+  for _i = 1 to (engine.config.population_size / 2) do
     let parent1 = List.nth current_pop.individuals (Random.int (List.length current_pop.individuals)) in
     let parent2 = List.nth current_pop.individuals (Random.int (List.length current_pop.individuals)) in
 
