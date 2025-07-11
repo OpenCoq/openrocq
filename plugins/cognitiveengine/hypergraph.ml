@@ -97,7 +97,7 @@ let add_node atomspace name =
 let get_node atomspace id =
   Hashtbl.find_opt atomspace.nodes id
 
-let update_node atomspace id node_to_update =
+let update_node atomspace id (node_to_update : node) =
   let node_with_timestamp = { node_to_update with updated_at = current_time () } in
   Hashtbl.replace atomspace.nodes id node_with_timestamp
 
@@ -126,7 +126,7 @@ let add_link atomspace source_nodes target_nodes link_type =
 let get_link atomspace id =
   Hashtbl.find_opt atomspace.links id
 
-let update_link atomspace id link =
+let update_link atomspace id (link : link) =
   let updated_link = { link with updated_at = current_time () } in
   Hashtbl.replace atomspace.links id updated_link
 
@@ -154,7 +154,7 @@ let add_tensor atomspace dimensions data shape =
 let get_tensor atomspace id =
   Hashtbl.find_opt atomspace.tensors id
 
-let update_tensor atomspace id tensor =
+let update_tensor atomspace id (tensor : tensor) =
   let updated_tensor = { tensor with updated_at = current_time () } in
   Hashtbl.replace atomspace.tensors id updated_tensor
 
@@ -197,7 +197,7 @@ let normalize_attention atomspace =
   let total_vlti = ref 0.0 in
 
   (* Calculate totals *)
-  Hashtbl.iter (fun _ node ->
+  Hashtbl.iter (fun _ (node : node) ->
     total_sti := !total_sti +. node.attention.sti;
     total_lti := !total_lti +. node.attention.lti;
     total_vlti := !total_vlti +. node.attention.vlti;
@@ -205,7 +205,7 @@ let normalize_attention atomspace =
 
   (* Normalize *)
   if !total_sti > 0.0 then
-    Hashtbl.iter (fun id node ->
+    Hashtbl.iter (fun id (node : node) ->
       let normalized_attention = {
         sti = node.attention.sti /. !total_sti;
         lti = node.attention.lti /. !total_lti;
@@ -216,7 +216,7 @@ let normalize_attention atomspace =
     ) atomspace.nodes
 
 let decay_attention atomspace decay_rate =
-  Hashtbl.iter (fun id node ->
+  Hashtbl.iter (fun id (node : node) ->
     let decayed_attention = {
       sti = node.attention.sti *. (1.0 -. decay_rate);
       lti = node.attention.lti *. (1.0 -. decay_rate);
@@ -228,7 +228,7 @@ let decay_attention atomspace decay_rate =
 
 let get_top_sti_elements atomspace n =
   let elements = ref [] in
-  Hashtbl.iter (fun _ node ->
+  Hashtbl.iter (fun _ (node : node) ->
     elements := (node.id, node.attention.sti) :: !elements
   ) atomspace.nodes;
   let sorted = List.sort (fun (_, a) (_, b) -> Float.compare b a) !elements in
