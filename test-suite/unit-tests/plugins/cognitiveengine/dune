@@ -1,0 +1,11 @@
+(executable
+ (public_name test_cognitiveengine)
+ (name test_cognitiveengine)
+ (package rocq-test-suite)
+ (libraries ounit2 rocq-runtime.plugins.cognitiveengine)
+ (modules test_cognitiveengine))
+
+(rule
+ (alias runtest)
+ (deps ./test_cognitiveengine.exe)
+ (action (run ./test_cognitiveengine.exe)))

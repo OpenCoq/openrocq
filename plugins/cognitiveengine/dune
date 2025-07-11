@@ -1,0 +1,10 @@
+(library
+ (name cognitiveengine_plugin)
+ (public_name rocq-runtime.plugins.cognitiveengine)
+ (synopsis "Rocq's cognitive engine plugin")
+ (modules (:standard \ g_cognitiveengine))
+ (libraries rocq-runtime.vernac rocq-runtime.plugins.ltac))
+
+(deprecated_library_name
+ (old_public_name coq-core.plugins.cognitiveengine)
+ (new_public_name rocq-runtime.plugins.cognitiveengine))

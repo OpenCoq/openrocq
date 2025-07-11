@@ -1,0 +1,69 @@
+(**************************************************************************)
+(*                                                                        *)
+(*                                 Rocq                                   *)
+(*                                                                        *)
+(*                      The Rocq Development Team                         *)
+(*                                                                        *)
+(*   Copyright 2024 The Rocq Development Team and contributors.           *)
+(*                                                                        *)
+(*   This file is distributed under the terms of the                     *)
+(*   GNU Lesser General Public License Version 2.1                       *)
+(*                                                                        *)
+(**************************************************************************)
+
+(* Cognitive Engine Plugin Grammar *)
+
+DECLARE PLUGIN "rocq-runtime.plugins.cognitiveengine"
+
+{
+
+open Stdarg
+open Cognitiveengine
+
+(* Global cognitive engine instance *)
+let global_engine = ref None
+
+let get_engine () =
+  match !global_engine with
+  | Some engine -> engine
+  | None ->
+    let engine = create_cognitive_engine () in
+    global_engine := Some engine;
+    engine
+
+}
+
+(* Cognitive Engine Commands *)
+
+VERNAC COMMAND EXTEND CognitiveEngineInit CLASSIFIED AS SIDEFF
+| [ "CognitiveEngine" "Init" ] -> {
+    let engine = create_cognitive_engine () in
+    global_engine := Some engine;
+    Feedback.msg_info Pp.(str "Cognitive engine initialized")
+  }
+END
+
+VERNAC COMMAND EXTEND CognitiveEngineAddConcept CLASSIFIED AS SIDEFF
+| [ "CognitiveEngine" "AddConcept" string(name) ] -> {
+    let engine = get_engine () in
+    let concept_id = add_concept engine name in
+    Feedback.msg_info Pp.(str ("Added concept: " ^ name ^ " (ID: " ^ string_of_int concept_id ^ ")"))
+  }
+END
+
+VERNAC COMMAND EXTEND CognitiveEngineStatus CLASSIFIED AS QUERY
+| [ "CognitiveEngine" "Status" ] -> {
+    let engine = get_engine () in
+    let status = get_engine_status engine in
+    Feedback.msg_info Pp.(str status)
+  }
+END
+
+VERNAC COMMAND EXTEND CognitiveEngineShutdown CLASSIFIED AS SIDEFF
+| [ "CognitiveEngine" "Shutdown" ] -> {
+    let engine = get_engine () in
+    shutdown_engine engine;
+    global_engine := None;
+    Feedback.msg_info Pp.(str "Cognitive engine shutdown complete")
+  }
+END
