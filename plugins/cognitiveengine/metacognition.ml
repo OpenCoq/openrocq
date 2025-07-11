@@ -100,7 +100,7 @@ let calculate_confidence_level engine =
 
 (** Perform self-monitoring *)
 let perform_self_monitoring engine =
-  let current_state = !(engine.state) in
+  let _ = !(engine.state) in
   let metrics = Hashtbl.create 8 in
 
   Hashtbl.add metrics "cognitive_load" (calculate_cognitive_load engine);
@@ -303,9 +303,9 @@ let optimize_cognitive_processes engine =
 
   (* Apply optimizations based on insights *)
   List.iter (fun insight ->
-    if String.contains insight "complexity" then
+    if insight = "complexity" then
       schedule_tasks engine.task_scheduler
-    else if String.contains insight "exploration" then
+    else if insight = "exploration" then
       let new_strategies = "exploratory" :: current_state.active_strategies in
       let updated_state = { current_state with active_strategies = new_strategies } in
       engine.state := updated_state

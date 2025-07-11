@@ -40,7 +40,7 @@ let add_relationship engine source_id target_id relation_type =
 (** Query concepts by name *)
 let query_concepts engine name =
   let nodes = Hypergraph.find_nodes_by_name engine.atomspace name in
-  List.map (fun node -> node.id) nodes
+  List.map (fun (node : Hypergraph.node) -> node.id) nodes
 
 (** Perform reasoning inference *)
 let perform_reasoning engine rule premises =
@@ -109,7 +109,7 @@ let export_to_scheme engine =
 
   (* Export nodes *)
   Buffer.add_string buffer "(define nodes\n  '(\n";
-  Hashtbl.iter (fun id node ->
+  Hashtbl.iter (fun id (node : Hypergraph.node) ->
     Buffer.add_string buffer (Printf.sprintf "    (%d \"%s\" %f %f %f)\n"
       id node.name node.attention.sti node.attention.lti node.confidence)
   ) engine.atomspace.nodes;
@@ -117,7 +117,7 @@ let export_to_scheme engine =
 
   (* Export links *)
   Buffer.add_string buffer "(define links\n  '(\n";
-  Hashtbl.iter (fun id link ->
+  Hashtbl.iter (fun id (link : Hypergraph.link) ->
     let sources = String.concat " " (List.map string_of_int link.source_nodes) in
     let targets = String.concat " " (List.map string_of_int link.target_nodes) in
     Buffer.add_string buffer (Printf.sprintf "    (%d (%s) (%s) \"%s\")\n"
@@ -165,7 +165,7 @@ let get_engine_status engine =
 let shutdown_engine engine =
   (* Cancel all pending tasks *)
   let pending_tasks = Taskscheduler.get_tasks_by_state engine.task_scheduler Taskscheduler.Pending in
-  List.iter (fun task ->
+  List.iter (fun (task : Taskscheduler.cognitive_task) ->
     ignore (Taskscheduler.cancel_task engine.task_scheduler task.id)
   ) pending_tasks;
 

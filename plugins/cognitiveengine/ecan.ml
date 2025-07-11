@@ -117,7 +117,7 @@ let spread_attention allocator source_id spread_amount =
 
 (** Perform attention decay *)
 let decay_attention_values allocator =
-  Hashtbl.iter (fun id node ->
+  Hashtbl.iter (fun id (node : Hypergraph.node) ->
     let decayed_sti = max allocator.config.min_sti (node.attention.sti *. (1.0 -. allocator.config.sti_decay_rate)) in
     let decayed_lti = max allocator.config.min_sti (node.attention.lti *. (1.0 -. allocator.config.lti_decay_rate)) in
     let decayed_vlti = max allocator.config.min_sti (node.attention.vlti *. (1.0 -. allocator.config.vlti_decay_rate)) in
@@ -129,13 +129,13 @@ let decay_attention_values allocator =
     } in
 
     let updated_node = { node with attention = new_attention } in
-    update_node allocator.atomspace id updated_node
+    Hypergraph.update_node allocator.atomspace id updated_node
   ) allocator.atomspace.nodes
 
 (** Get elements ready for forgetting *)
 let get_forgettable_elements allocator =
   let forgettable = ref [] in
-  Hashtbl.iter (fun id node ->
+  Hashtbl.iter (fun id (node : Hypergraph.node) ->
     let importance = calculate_importance_score node.attention in
     if importance < allocator.config.forgetting_threshold then
       forgettable := id :: !forgettable
@@ -152,7 +152,7 @@ let perform_forgetting allocator =
 (** Get attention focus (high STI elements) *)
 let get_attention_focus allocator n =
   let elements = ref [] in
-  Hashtbl.iter (fun id node ->
+  Hashtbl.iter (fun id (node : Hypergraph.node) ->
     elements := (id, node.attention.sti) :: !elements
   ) allocator.atomspace.nodes;
 
@@ -163,17 +163,17 @@ let get_attention_focus allocator n =
 (** Redistribute attention budget *)
 let redistribute_attention_budget allocator =
   let total_attention = ref 0.0 in
-  Hashtbl.iter (fun _ node ->
+  Hashtbl.iter (fun _ (node : Hypergraph.node) ->
     total_attention := !total_attention +. node.attention.sti
   ) allocator.atomspace.nodes;
 
   if !total_attention > 0.0 then
     let scale_factor = allocator.config.attention_budget /. !total_attention in
-    Hashtbl.iter (fun id node ->
+    Hashtbl.iter (fun id (node : Hypergraph.node) ->
       let scaled_sti = node.attention.sti *. scale_factor in
       let new_attention = { node.attention with sti = scaled_sti } in
       let updated_node = { node with attention = new_attention } in
-      update_node allocator.atomspace id updated_node
+      Hypergraph.update_node allocator.atomspace id updated_node
     ) allocator.atomspace.nodes
 
 (** Get attention statistics *)
@@ -183,7 +183,7 @@ let get_attention_statistics allocator =
   let total_vlti = ref 0.0 in
   let node_count = ref 0 in
 
-  Hashtbl.iter (fun _ node ->
+  Hashtbl.iter (fun _ (node : Hypergraph.node) ->
     total_sti := !total_sti +. node.attention.sti;
     total_lti := !total_lti +. node.attention.lti;
     total_vlti := !total_vlti +. node.attention.vlti;

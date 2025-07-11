@@ -1,0 +1,11 @@
+(executable
+ (public_name simple_test_cognitiveengine)
+ (name simple_test)
+ (package rocq-test-suite)
+ (libraries rocq-runtime.plugins.cognitiveengine)
+ (modules simple_test))
+
+(rule
+ (alias runtest-simple)
+ (deps ./simple_test.exe)
+ (action (run ./simple_test.exe)))
