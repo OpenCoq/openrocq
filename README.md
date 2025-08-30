@@ -103,6 +103,8 @@ Guidelines for contributing to Rocq in various ways are listed in the [contribut
 
 Information about release plans is at https://github.com/rocq-prover/rocq/wiki/Release-Plan
 
+For development roadmap and future directions, see the [OpenRocq Development Roadmap](ROADMAP.md).
+
 ## Supporting Rocq
 
 Help the Rocq community grow and prosper by becoming a sponsor! The [Rocq
