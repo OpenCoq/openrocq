@@ -29,6 +29,7 @@
 | [`dev/doc/proof-engine.md`](doc/proof-engine.md) | Tutorial on new proof engine |
 | [`dev/doc/xml-protocol.md`](doc/xml-protocol.md) | XML protocol that coqtop and IDEs use to communicate |
 | [`dev/doc/release-process.md`](doc/release-process.md) | Process of creating a new Rocq release |
+| [`dev/doc/DEVELOPMENT_GUIDE.md`](doc/DEVELOPMENT_GUIDE.md) | Technical implementation guide for the development roadmap |
 
 
 ## Documentation of ML interfaces using `odoc` ( `_build/default/_doc`)
